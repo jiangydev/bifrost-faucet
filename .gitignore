@@ -8,3 +8,6 @@
 
 # bnc 地址集合
 bnc_waiting.txt
+bnc_gen.txt
+
+*.log
