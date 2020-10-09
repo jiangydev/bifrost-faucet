@@ -1,2 +1,4 @@
 schedule~=0.6.0
 Telethon~=1.16.4
+clipboard~=0.0.4
+selenium~=3.141.0
