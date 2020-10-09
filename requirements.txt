@@ -1,0 +1,2 @@
+schedule~=0.6.0
+Telethon~=1.16.4

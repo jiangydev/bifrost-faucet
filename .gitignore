@@ -1,0 +1,10 @@
+# 项目隔离环境
+/venv
+.idea
+
+# telegram session 缓存
+*.session
+*.session-journal
+
+# bnc 地址集合
+bnc_waiting.txt
