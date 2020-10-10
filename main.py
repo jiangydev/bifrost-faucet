@@ -68,11 +68,27 @@ def load_bnc_job():
         array = lines.readlines()
         for i in array:
             i = i.strip('\n')
+            i = i.strip('!')
             # 跳过空行和注释行; 如果地址已存在, 也不加入备选
             if len(i) > 0 and not i.startswith('#') and i not in handling_bnc:
                 handling_bnc.append(i)
         print(f'[定时任务] 读取文件完成: {handling_bnc}')
     print(f'[定时任务] 执行结束')
+
+
+# 任务初始化：先从文件中读取地址，放入集合；
+def load_bnc_init():
+    print(f'[任务初始化] 开始执行')
+    with open('./bnc_waiting.txt', 'r', encoding='UTF-8') as lines:
+        # 读取到的每一行末尾有换行符\n, 需要剔除
+        array = lines.readlines()
+        for i in array:
+            i = i.strip('\n')
+            # 跳过空行和注释行; 如果地址已存在, 也不加入备选
+            if len(i) > 0 and not i.startswith('#') and not i.startswith('!') and i not in handling_bnc:
+                handling_bnc.append(i)
+        print(f'[任务初始化] 读取文件完成: {handling_bnc}')
+    print(f'[任务初始化] 执行结束')
 
 
 # 判断集合元素个数，并一直取第0个，发送 /want bnc 的 message；
@@ -105,7 +121,7 @@ def job_start():
 
 if __name__ == '__main__':
     # 先初始化一次bnc地址
-    load_bnc_job()
+    load_bnc_init()
     # 开启定时任务线程
     Thread(target=job_start).start()
     # 运行tl
