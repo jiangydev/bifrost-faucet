@@ -26,11 +26,15 @@ logging.basicConfig(format='[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s'
 
 handling_bnc = []
 
+bot_reply_time = 0
+
 
 # Bifrost Faucet has ID -1001352638541
 # @bifrost_faucet2_bot: 1173124754
 @client.on(events.NewMessage(chats=[-1001352638541], from_users=[1173124754]))
 async def my_event_handler(event):
+    global bot_reply_time
+    bot_reply_time = 0
     print(f'[消息监听] 待处理的bnc地址列表: {handling_bnc}')
     msg = event.message.message
     # 正则查找bnc地址
@@ -93,6 +97,11 @@ def load_bnc_init():
 
 # 判断集合元素个数，并一直取第0个，发送 /want bnc 的 message；
 def send_msg_job():
+    global bot_reply_time
+    if bot_reply_time > 180:
+        print('[定时任务-消息发送] 机器人响应超时, 不发送消息')
+        return None
+    print('[定时任务-消息发送] 机器人正常')
     sleep_seconds = random.randint(1, 10)
     print(f'[定时任务-消息发送] 开始随机休眠{sleep_seconds}s')
     time.sleep(sleep_seconds)
@@ -109,8 +118,8 @@ def send_msg_job():
 
 # 定时任务1:加载bnc地址(每24h)
 schedule.every(24).hours.do(load_bnc_job)
-# 定时任务2:发送tl消息(每30s)
-schedule.every(30).seconds.do(send_msg_job)
+# 定时任务2:发送tl消息(每60s)
+schedule.every(60).seconds.do(send_msg_job)
 
 
 def job_start():
@@ -119,11 +128,19 @@ def job_start():
         time.sleep(1)
 
 
+def time_start():
+    global bot_reply_time
+    while True:
+        time.sleep(1)
+        bot_reply_time = bot_reply_time + 1
+
+
 if __name__ == '__main__':
     # 先初始化一次bnc地址
     load_bnc_init()
     # 开启定时任务线程
     Thread(target=job_start).start()
+    Thread(target=time_start).start()
     # 运行tl
     client.start()
     client.run_until_disconnected()
