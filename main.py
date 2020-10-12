@@ -26,7 +26,7 @@ logging.basicConfig(format='[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s'
 
 handling_bnc = []
 
-bot_reply_time = 0
+bot_reply_time = 180
 
 
 # Bifrost Faucet has ID -1001352638541
@@ -35,8 +35,8 @@ bot_reply_time = 0
 async def my_event_handler(event):
     global bot_reply_time
     bot_reply_time = 0
-    print(f'[消息监听] 待处理的bnc地址列表: {handling_bnc}')
     msg = event.message.message
+    print(f'[消息监听] 监听到消息: {msg}')
     # 正则查找bnc地址
     bnc_obj = re.search('(5\\w{47})|([a-h]\\w{46})', msg)
     if bnc_obj:
@@ -76,7 +76,7 @@ def load_bnc_job():
             # 跳过空行和注释行; 如果地址已存在, 也不加入备选
             if len(i) > 0 and not i.startswith('#') and i not in handling_bnc:
                 handling_bnc.append(i)
-        print(f'[定时任务] 读取文件完成: {handling_bnc}')
+        print(f'[定时任务] 读取文件完成, 读取地址数: {len(handling_bnc)}')
     print(f'[定时任务] 执行结束')
 
 
@@ -91,14 +91,14 @@ def load_bnc_init():
             # 跳过空行和注释行; 如果地址已存在, 也不加入备选
             if len(i) > 0 and not i.startswith('#') and not i.startswith('!') and i not in handling_bnc:
                 handling_bnc.append(i)
-        print(f'[任务初始化] 读取文件完成: {handling_bnc}')
+        print(f'[任务初始化] 读取文件完成, 备选地址数: {len(handling_bnc)}')
     print(f'[任务初始化] 执行结束')
 
 
 # 判断集合元素个数，并一直取第0个，发送 /want bnc 的 message；
 def send_msg_job():
     global bot_reply_time
-    if bot_reply_time > 180:
+    if bot_reply_time >= 180:
         print('[定时任务-消息发送] 机器人响应超时, 不发送消息')
         return None
     print('[定时任务-消息发送] 机器人正常')
@@ -111,8 +111,13 @@ def send_msg_job():
         print(f'[定时任务-消息发送] 开始执行: {current_bnc}')
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        loop.run_until_complete(send_msg(-1001352638541, current_bnc))
-        loop.close()
+        try:
+            loop.run_until_complete(send_msg(-1001352638541, current_bnc))
+        except:
+            bot_reply_time = bot_reply_time + 180
+            print(f'[定时任务-消息发送] 发生异常: {current_bnc}, 时间重置为 {bot_reply_time}')
+        finally:
+            loop.close()
     print(f'[定时任务-消息发送] 执行结束')
 
 
